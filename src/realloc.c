@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: Joseph K                                   +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025-05-02 10:00:00 by Joseph          #+#    #+#             */
-/*   Updated: 2025-05-02 10:00:00 by Joseph         ###   ########.fr       */
+/*   Created: 2025-05            by Joseph          #+#    #+#             */
+/*   Updated: 2025-05            by Joseph         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ static void ft_memcpy(void *dst, const void *src, size_t size)
 
 
 /* get the actual size of data a block can hold */
-static size_t get_user_size(t_block *block)
+size_t get_user_size(t_block *block)
 {
     return (block->size - sizeof(t_block) - sizeof(t_footer));
 }

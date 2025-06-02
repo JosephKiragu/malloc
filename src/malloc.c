@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: Joseph Kiragu                              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025-05-02 10:00:00 by Joseph           #+#    #+#             */
-/*   Updated: 2025-05-02 10:00:00 by Joseph          ###   ########.adl       */
+/*   Created: 2025-05             by Joseph           #+#    #+#             */
+/*   Created: 2025-05             by Joseph          ###   ########.adl       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ void *malloc(size_t size)
         return (allocate_large(size));
 
     /* lock for thread safety */
-    pthread_mutex_lock(&gmalloc_state.mutex);
+    pthread_mutex_lock(&g_malloc_state.mutex);
 
     /* try find a zone with enough space */
     zone = find_zone_with_space(size, zone_type);
@@ -75,7 +75,7 @@ void *malloc(size_t size)
         zone = create_zone(zone_type, size);
         if (!zone)
         {
-            pthread_mutex_unlock(g_malloc_state.mutex);
+            pthread_mutex_unlock(&g_malloc_state.mutex);
             return NULL;
         }
     }
@@ -91,7 +91,7 @@ void *malloc(size_t size)
     zone->free_blocks--;
 
     /* unlock */
-    pthread_mutex_unlock(&gmalloc_state.mutex);
+    pthread_mutex_unlock(&g_malloc_state.mutex);
 
     /* return pointer to user data area */
     return (PTR_FROM_BLOCK(block));

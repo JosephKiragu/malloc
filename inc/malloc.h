@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   malloc.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: student <student@42.fr>                    +#+  +:+       +#+        */
+/*   By: Joseph <student@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025-05-02 10:00:00 by student          #+#    #+#             */
-/*   Updated: 2025-05-02 10:00:00 by student         ###   ########.fr       */
+/*   Created: 2025-05                                 #+#    #+#             */
+/*   Updated: 2025-05                                ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,6 +106,7 @@ void    *realloc(void *ptr, size_t size);
 void    show_alloc_mem(void);
 
 /* internal helper functions */
+size_t get_user_size(t_block *block);
 t_zone  *create_zone(t_zone_type zone_type, size_t size);
 t_zone  *find_zone_with_space(size_t size, t_zone_type zone_type);
 t_block *find_free_block(t_zone *zone, size_t size);
