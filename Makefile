@@ -5,8 +5,8 @@
 #                                     +:+ +:+         +:+                     #
 #    By: Joseph <jkiragu@42.adl>      +#+  +:+       +#+                      #
 #                                 +#+#+#+#+#+   +#+                           #
-#    Created: 2025-05-28 19:09:30 by Joseph        #+#    #+#                #
-#    Updated: 2025-05-28 19:09:30 by Joseph        ###   ########.fr         #
+#    Created: 2025-05             by Joseph        #+#    #+#                #
+#    Updated: 2025-05             by Joseph        ###   ########.fr         #
 #                                                                              #
 # **************************************************************************** #
 
@@ -49,7 +49,7 @@ $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c %(INCS) | $(OBJ_DIR)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INCS) | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -I$(INC_DIR) -c $< -o $@
 
 
@@ -75,11 +75,15 @@ TEST_SRC = test.c
 
 # compiling test program
 $(TEST): $(NAME) $(TEST_SRC)
-	$(CC) $(CFLAGS) -I$(INC_DIR) $(TEST_SRC) -L. -lft_malloc -o $(TEST)
+	$(CC) $(CFLAGS) -I$(INC_DIR) $(TEST_SRC) -L. -lft_malloc -Wl,-rpath,. -o $(TEST)
 
 # running test
 test: $(TEST)
+	LD_LIBRARY_PATH=. ./$(TEST)
+
+# alternative run test without LD_LIBRARY_PATH (if RPATH is embedded)
+test_rpath: $(TEST)
 	./$(TEST)
 
-.PHONY: all clean fclean re test
+.PHONY: all clean fclean re test test_rpath
 

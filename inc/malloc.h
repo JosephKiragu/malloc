@@ -87,7 +87,7 @@ typedef struct s_malloc_state {
 
 
 // calculate footer position from a block header
-# define FOOTER(block) ((t_footer *)((char *)(block)+(block)->sizeof(t_footer)))
+# define FOOTER(block) ((t_footer *)((char *)(block)+(block)->size - sizeof(t_footer)))
 
 
 // calculate block header position from a pointer returned to a user
@@ -114,6 +114,6 @@ t_block *split_block(t_block *block, size_t size);
 void    merge_free_blocks(t_zone *zone, t_block *block);
 void    *allocate_large(size_t size);
 bool    try_extend_block(t_block *block, size_t new_size);
-void    print_zone(t_zone *zone, t_zone_type zone_type);
+size_t    print_zone(t_zone *zone, t_zone_type zone_type);
 
 #endif 

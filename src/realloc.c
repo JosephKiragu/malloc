@@ -97,7 +97,7 @@ void *realloc(void *ptr, size_t size)
         return NULL;
 
     /* copy data to the new location */
-    ft_memcpy(new_ptr, ptr, user_size, user_size < size ? user_size : size);
+    ft_memcpy(new_ptr, ptr, user_size < size ? user_size : size);
 
 
     /* free old memory */

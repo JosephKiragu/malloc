@@ -21,7 +21,7 @@ void *allocate_large(size_t size)
 {
     t_zone      *zone;
     t_block     *block;
-    t_footer    *footer;
+    // t_footer    *footer;
 
     // create a new zone just large enough for this allocation
     zone = create_zone(LARGE, size);
@@ -46,7 +46,7 @@ void *malloc(size_t size)
     t_zone      *zone;
     t_block     *block;
     t_zone_type zone_type;
-    t_footer    *footer;
+    // t_footer    *footer;
 
     /* handle edge case */
     if (size == 0)
@@ -54,6 +54,10 @@ void *malloc(size_t size)
 
     /* align size and add metadata overhead */
     size = BLOCK_SIZE(ALIGN(size));
+
+    #ifdef DEBUG
+    printf("malloc(%zu) called\n", size);
+    #endif
 
     /* determine zone based on size */
     if (size <= BLOCK_SIZE(TINY_MAX))

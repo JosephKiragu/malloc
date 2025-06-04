@@ -27,7 +27,7 @@ t_zone *create_zone(t_zone_type zone_type, size_t size)
         zone_size = TINY_ZONE;
     else if (zone_type == SMALL)
         zone_size = SMALL_ZONE;
-    else: // large
+    else // large
         zone_size = ALIGN(sizeof(t_zone) + BLOCK_SIZE(size));
 
     /* map memory for the zone */
@@ -88,7 +88,7 @@ t_zone *find_zone_with_space(size_t size, t_zone_type zone_type)
     if (zone_type == TINY)
         zone = g_malloc_state.tiny_zones;
     else if (zone_type == SMALL)
-        zone = g_malloc_state.smalll_zones;
+        zone = g_malloc_state.small_zones;
     else
         zone = g_malloc_state.large_zones;
 
@@ -111,14 +111,14 @@ t_zone *find_zone_with_space(size_t size, t_zone_type zone_type)
 /*
  * find a free block in the specified zone that's large enough
  */
-t_block *find_free_block(t_zone *zone, size_t)
+t_block *find_free_block(t_zone *zone, size_t size)
 {
     t_block     *block;
 
     block = zone->first;
     while (block)
     {
-        if (block->is_free && block_size >= size)
+        if (block->is_free && block->size >= size)
             return block;
         
         // get next block by advancing pointer
@@ -174,17 +174,17 @@ t_block *split_block(t_block *block, size_t size)
 /*
  * merge adjacent free block
  */
-void merge_free_blocks(t_zone, t_block *block)
+void merge_free_blocks(t_zone *zone, t_block *block)
 {
     t_block     *next_block;
     t_footer    *footer;
     t_block     *prev_block;
-    t_block     *prev_footer;
+    t_footer     *prev_footer;
 
     //check if there's a next block to potentially merge with
-    if ((Char *)block + block->size < (char *)zone + zone->size)
+    if ((char *)block + block->size < (char *)zone + zone->zone_size)
     {
-        next_block = (t_block *)((Char *)block + block->size);
+        next_block = (t_block *)((char *)block + block->size);
         if (next_block->is_free)
         {
             // merge with next block
@@ -208,18 +208,18 @@ void merge_free_blocks(t_zone, t_block *block)
         prev_block = (t_block *)((char *)block - *prev_footer);
 
         if (prev_block->is_free)
-            {
-                // merge with previous block
-                prev_block->size += block->size;
-                prev_block->next = block->next
+        {
+            // merge with previous block
+            prev_block->size += block->size;
+            prev_block->next = block->next;
 
-                // update footer
-                footer = FOOTER(prev_block);
-                *footer = prev_block->size;
+            // update footer
+            footer = FOOTER(prev_block);
+            *footer = prev_block->size;
 
-                // decrease free block count as we merged two blocks
-                zone->free_blocks--;
-            }
+            // decrease free block count as we merged two blocks
+            zone->free_blocks--;
+        }
     }
 }
 

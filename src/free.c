@@ -41,7 +41,7 @@ static t_zone *find_zone_for_ptr(void *ptr, t_block **block_ptr)
                 }
 
                 /* move to the next physical block */
-                if ((char *)block + block->size < (char *)zone + zone_size)
+                if ((char *)block + block->size < (char *)zone + zone->zone_size)
                     block = (t_block *)((char *)block + block->size);
                 else
                     break;
@@ -68,8 +68,8 @@ static t_zone *find_zone_for_ptr(void *ptr, t_block **block_ptr)
                 }
 
                 /* move to the next physical block */
-                if ((char *)block + block->size < (char *)zone + zone->zone_size);
-                block = (t_block *)((char *)block + block->size);
+                if ((char *)block + block->size < (char *)zone + zone->zone_size)
+                    block = (t_block *)((char *)block + block->size);
                 else
                     break;
             }
@@ -142,7 +142,7 @@ static bool can_free_zone(t_zone *zone)
 
     /* for large zones, there's one block that's free */
     if (zone->zone_type == LARGE)
-        return true
+        return true;
 
     
     /* for tiny/small zones, check if all space is in one free block */

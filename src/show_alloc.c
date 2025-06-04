@@ -18,7 +18,7 @@ extern t_malloc_state g_malloc_state;
  * printing a zone and its allocations
  */
 
-void print_zone(t_zone *zone, t_zone_type zone_type)
+size_t print_zone(t_zone *zone, t_zone_type zone_type)
 {
     t_block *block;
     size_t  total_bytes;
