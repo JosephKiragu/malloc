@@ -14,6 +14,15 @@
 
 extern t_malloc_state g_malloc_state;
 
+
+/*
+ * Get the actual size of data a block can hold
+ */
+size_t get_user_size(t_block *block)
+{
+    return (block->size - sizeof(t_block) - sizeof(t_footer));
+}
+
 /* create a new zone of the specified type with at least the given size */
 t_zone *create_zone(t_zone_type zone_type, size_t size)
 {

@@ -33,11 +33,7 @@ static void ft_memcpy(void *dst, const void *src, size_t size)
 }
 
 
-/* get the actual size of data a block can hold */
-size_t get_user_size(t_block *block)
-{
-    return (block->size - sizeof(t_block) - sizeof(t_footer));
-}
+
 
 
 /* realloc implementation */

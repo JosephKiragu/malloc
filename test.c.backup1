@@ -1,0 +1,214 @@
+#include <stdio.h>
+#include <string.h>
+#include <pthread.h>
+#include "inc/malloc.h"
+
+#define TINY_ALLOC_SIZE 64
+#define SMALL_ALLOC_SIZE 512
+#define LARGE_ALLOC_SIZE 2048
+#define NUM_ALLOCS 200
+
+
+void test_basic_malloc_free(void)
+{
+    printf("\n=== testing basic malloc and free ===\n");
+
+    /* testing tiny malloc */
+    char *ptr1 = (char *)malloc(TINY_ALLOC_SIZE);
+    if (ptr1)
+    {
+        strcpy(ptr1, "This is a tiny allocation");
+        printf("Tiny allocation at %p: %s\n", ptr1, ptr1);
+        free(ptr1);
+        printf("Freed tiny allocation\n");
+    }
+    else
+        printf("Failed to allocate tiny memory\n");
+
+    /* small allocation*/
+    char *ptr2 = (char *)malloc(SMALL_ALLOC_SIZE);
+    if (ptr2)
+    {
+        strcpy(ptr2,"This is a small allocation");
+        printf("Small allocation at %p: %s\n", ptr2, ptr2);
+        free(ptr2);
+        printf("Freed small allocation\n");
+    }
+    else
+        printf("Failed to allocate small allocation\n");
+
+    /* large allocation */
+    char *ptr3 = (char *)malloc(LARGE_ALLOC_SIZE);
+    if (ptr3)
+    {
+        strcpy(ptr3, "This is a large allocation");
+        printf("Large allocation at %p: %s\n", ptr3, ptr3);
+        free(ptr3);
+        printf("Freed large allocation\n");
+    }
+    else
+        printf("Failed to allocate small allocation\n");
+}
+
+void test_realloc(void)
+{
+    printf("\n=== Testing realloc ===\n");
+
+    char *ptr = (char *)malloc(TINY_ALLOC_SIZE);
+    if (ptr)
+    {
+        strcpy(ptr, "initial small string");
+        printf("Initial allocation at %p: %s\n", ptr, ptr);
+
+        /* growing the allocation */
+        ptr = (char *)realloc(ptr, SMALL_ALLOC_SIZE);
+        if (ptr)
+        {
+            strcpy(ptr + strlen(ptr), " - now expanded to a much longer string that wouldn't fit before");
+            printf("Expanded allocation at %p: %s\n", ptr, ptr);
+
+            /* shrinking the allocation */
+            ptr= (char *)realloc(ptr, TINY_ALLOC_SIZE);
+            if (ptr)
+            {
+                printf("shrunk allocation at %p: %s\n", ptr, ptr);
+                free(ptr);
+                printf("freed realloc'd memory\n");
+            }
+            else
+                printf("failed to shrink allocation\n");
+        }
+        else
+            printf("failed to expand allocation\n");
+    }
+    else
+        printf("failed initial allocation for reallloc test\n");
+}
+
+void test_multiple_allocations(void)
+{
+    printf("\n=== Testing multiple allocations ===\n");
+
+    void *ptrs[NUM_ALLOCS];
+    int i;
+    int tiny_count = 0, small_count = 0, large_count = 0;
+
+    // allocate many blocks of different sizes
+    for (i = 0; i < NUM_ALLOCS; i++)
+    {
+        size_t size;
+
+        if (i % 3 == 0) {
+            size = TINY_ALLOC_SIZE;
+            tiny_count++;
+        }
+        else if (i % 3 == 1) {
+            size = SMALL_ALLOC_SIZE;
+            small_count++;
+        }
+        else {
+            size = LARGE_ALLOC_SIZE;
+            large_count++;
+        }
+
+        ptrs[i] = malloc(i);
+
+        if (!ptrs[i])
+        {
+            printf("Failed to allocate iteration %d (size=%zu)\n", i, size);
+            break;
+        }
+
+        // debugging first 10 iters
+        if (i < 10) {
+            printf("Allocation %d: size=%zu, ptr=%p\n", i, size, ptrs[i]);
+        }
+    }
+
+    printf("\nExpected allocations - TINY: %d, SMALL: %d, LARGE: %d", tiny_count, small_count, large_count);
+
+    
+    printf("\nMemory state after allocations:\n");
+    show_alloc_mem();
+
+    printf("\n=== freeing even-indexed allocations===\n");
+    for (i = 0; i < NUM_ALLOCS; i += 2)
+    {
+        if (ptrs[i]) {
+            if (i < 10) {
+                printf("Freeing allocation %d: ptr=%p\n", i, ptrs[i]);
+            }
+            free(ptrs[i]);
+            ptrs[i] = NULL;
+        }
+        
+    }
+
+    printf("\nMemory state after freeing half:\n");
+    show_alloc_mem();
+
+    // freeing the rest
+    printf("\n=== freeing odd-indexed allocations ===\n");
+    for (i = 1; i < NUM_ALLOCS; i += 2)
+    {
+        if (ptrs[i]) {
+            if (i < 10) {
+                printf("Freeing allocation %d: ptr=%p\n", i, ptrs[i]);
+            }
+            free(ptrs[i]);
+            ptrs[i] = NULL;
+        }
+    }
+
+    printf("\nMemory state after freeing all:\n");
+    show_alloc_mem();
+}
+
+void debug_size_calculation(void)
+{
+    printf("\n=== Debugging size calculations ===\n");
+
+    printf("User requested size -> Actual block size:\n");
+    printf("TINY_ALLOC_SIZE (%d) -> BLOCK_SIZE(ALIGN(%d)) = %zu\n",
+            TINY_ALLOC_SIZE, TINY_ALLOC_SIZE, BLOCK_SIZE(ALIGN(TINY_ALLOC_SIZE)));
+    printf("SMALL_ALLOC_SIZE (%d) -> BLOCK_SIZE(ALIGN(%d)) = %zu\n",
+            SMALL_ALLOC_SIZE, SMALL_ALLOC_SIZE, BLOCK_SIZE(ALIGN(SMALL_ALLOC_SIZE)));
+    printf("LARGE_ALLOC_SIZE (%d) -> BLOCK_SIZE(ALIGN(%d)) = %zu\n",
+            LARGE_ALLOC_SIZE, LARGE_ALLOC_SIZE, BLOCK_SIZE(ALIGN(LARGE_ALLOC_SIZE)));
+
+    //test zone type determination
+    size_t tiny_block = BLOCK_SIZE(ALIGN(TINY_ALLOC_SIZE));
+    size_t small_block = BLOCK_SIZE(ALIGN(SMALL_ALLOC_SIZE));
+    // size_t large_block = BLOCK_SIZE(ALIGN(LARGE_ALLOC_SIZE));
+
+    printf("\nZone type determination:\n");
+    printf("TINY_MAX = %d, BLOCK_SIZE(TINY_MAX) = %zu\n", TINY_MAX, BLOCK_SIZE(TINY_MAX));
+    printf("SMALL_MAX= %d, BLOCK_SIZE(SMALL_MAX) = %zu\n", SMALL_MAX, BLOCK_SIZE(SMALL_MAX));
+
+    printf("\nTINY block (%zu) <= BLOCK_SIZE(TINY_MAX) (%zu)? %s\n",
+            tiny_block, BLOCK_SIZE(TINY_MAX), tiny_block<= BLOCK_SIZE(TINY_MAX) ? "YES" : "NO");
+    printf("SMALL block(%zu) <= BLOCK_SIZE(SMALL_MAX) (%zu)? %s\n",
+            small_block, BLOCK_SIZE(SMALL_MAX), small_block <= BLOCK_SIZE(SMALL_MAX) ? "YES": "NO");
+
+}
+
+
+int main(void)
+{
+    // forcing initialization with a tiny allocation
+    void *init_ptr = malloc(1);
+    if (init_ptr) free(init_ptr);
+
+
+
+    printf("==== TESTING MALLOC IMPLEMENTATION ===\n");
+
+    // test_basic_malloc_free();
+    // test_realloc();
+
+    debug_size_calculation();
+    test_multiple_allocations();
+
+    printf("\n=== tests completed ===\n");
+    return (0);
+}
